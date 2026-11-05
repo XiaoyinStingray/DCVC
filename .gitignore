@@ -1,10 +1,5 @@
+__pycache__/
 *.pyc
-.vscode/
-*.bin
-*.png
-*.so
-build/
-*.tar
-*.pyd
-*.egg-info
-*.json
+outputs/
+*.pth.tar
+checkpoints/*.pth*
