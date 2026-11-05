@@ -8,7 +8,7 @@ Example (HEVC-D, 96 frames, HT-S):
 
     python scripts/eval_forward_video.py \
         --src_type yuv420 \
-        --src_path /gdata1/zhaojy/datasets/test/HEVC/D/BasketballPass_416x240_50.yuv \
+        --src_path <DATA_ROOT>/test/HEVC/D/BasketballPass_416x240_50.yuv \
         --width 416 --height 240 --frames 96 \
         --model_path_i checkpoints/cvpr2026_image.pth.tar \
         --model_path_p checkpoints/cvpr2026_video_hts.pth.tar \
