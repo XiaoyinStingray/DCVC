@@ -171,7 +171,7 @@ def run_one_point_with_stream(p_net, i_net, args):
             log_result = json.load(f)
             if log_result['i_frame_num'] + log_result['p_frame_num'] == args['frame_num']:
                 return log_result
-            print(f'incorrect log for {args['curr_json_path']}, try to rerun.')
+            print(f"incorrect log for {args['curr_json_path']}, try to rerun.")
 
     frame_num = args['frame_num']
     save_decoded_frame = args['save_decoded_frame']
@@ -415,8 +415,12 @@ def init_func(args, gpu_num):
     if gpu_id >= 0:
         if args.cuda_idx is not None:
             gpu_id = args.cuda_idx[gpu_id]
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
-        device = 'cuda:0'
+        # Cluster policy: never assign CUDA_VISIBLE_DEVICES inside a PBS-launched script
+        # (it breaks scheduler accounting). The visible devices are already restricted by
+        # `docker --gpus`, so just bind this process to the given device and use the real
+        # device index instead of remapping everything to cuda:0.
+        torch.cuda.set_device(gpu_id)
+        device = f'cuda:{gpu_id}'
     else:
         device = 'cpu'
 
@@ -462,7 +466,7 @@ def worker(args):
 
     args['src_path'] = os.path.join(args['dataset_path'], sub_dir_name)
     args['bin_folder'] = bin_folder
-    args['curr_bin_path'] = os.path.join(bin_folder, f'{args['seq']}_q{args['qp_i']}.bin')
+    args['curr_bin_path'] = os.path.join(bin_folder, f"{args['seq']}_q{args['qp_i']}.bin")
     args['curr_rec_path'] = args['curr_bin_path'].replace('.bin', '.mp4')
     args['curr_json_path'] = args['curr_bin_path'].replace('.bin', '.json')
 
@@ -483,9 +487,12 @@ def main():
         raise RuntimeError('test_video.py requires CUDA (torch.cuda.is_available() is False)')
 
     args.skip_thres = max(0, args.skip_thres)
+    # Cluster policy: GPU visibility is owned by the scheduler / `docker --gpus`;
+    # this script must not touch CUDA_VISIBLE_DEVICES. --cuda_idx is only used by
+    # init_func() to pick an index among the *already visible* devices.
     if args.cuda_idx is not None:
-        cuda_device = ','.join([str(s) for s in args.cuda_idx])
-        os.environ['CUDA_VISIBLE_DEVICES'] = cuda_device
+        assert all(0 <= i < torch.cuda.device_count() for i in args.cuda_idx), \
+            f'--cuda_idx {args.cuda_idx} out of range (visible={torch.cuda.device_count()})'
 
     worker_num = args.worker
     assert worker_num >= 1
@@ -520,7 +527,7 @@ def main():
         else:
             qp_p = qp_i
 
-    print(f'testing {rate_num} rates, using qp: {', '.join(str(q) for q in qp_i)}')
+    print(f"testing {rate_num} rates, using qp: {', '.join(str(q) for q in qp_i)}")
 
     root_path = args.force_root_path if args.force_root_path is not None else config['root_path']
     config = config['test_classes']
@@ -577,7 +584,7 @@ def main():
             log_result[ds_name][seq] = {}
 
     for res in results:
-        log_result[res['ds_name']][res['seq']][f'{res['rate_idx']:03d}'] = res
+        log_result[res['ds_name']][res['seq']][f"{res['rate_idx']:03d}"] = res
 
     out_json_dir = os.path.dirname(args.output_path)
     if len(out_json_dir) > 0:

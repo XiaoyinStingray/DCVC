@@ -23,7 +23,7 @@ def main():
 
     if args.cuda_idx is not None:
         cuda_device = ','.join([str(s) for s in args.cuda_idx])
-        os.environ['CUDA_VISIBLE_DEVICES'] = cuda_device
+        # [cluster-policy] removed CUDA_VISIBLE_DEVICES assignment (scheduler owns GPU visibility)
     os.environ['CUBLAS_WORKSPACE_CONFIG'] = ":4096:8"
 
     worker_num = args.worker

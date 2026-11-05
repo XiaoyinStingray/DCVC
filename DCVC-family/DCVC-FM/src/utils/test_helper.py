@@ -455,8 +455,8 @@ def init_func(args, gpu_num):
     if gpu_id >= 0:
         if args.cuda_idx is not None:
             gpu_id = args.cuda_idx[gpu_id]
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
-        device = "cuda:0"
+        torch.cuda.set_device(gpu_id)
+        device = f'cuda:{gpu_id}'
     else:
         device = "cpu"
 

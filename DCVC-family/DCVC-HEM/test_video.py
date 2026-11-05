@@ -253,8 +253,8 @@ def main():
     torch.backends.cudnn.enabled = True
     args = parse_args()
 
-    if args.cuda_device is not None and args.cuda_device != '':
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda_device
+    # [cluster-policy] --cuda_device is ignored: GPU visibility is owned by
+    # the scheduler / `docker --gpus`. Never assign CUDA_VISIBLE_DEVICES here.
     os.environ['CUBLAS_WORKSPACE_CONFIG'] = ":4096:8"
 
     worker_num = args.worker

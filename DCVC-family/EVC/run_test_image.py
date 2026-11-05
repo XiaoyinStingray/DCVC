@@ -57,7 +57,7 @@ def main():
 
 # latency on kodak
 """
-CUDA_VISIBLE_DEVICES=0 python test_all_image.py 2>&1 | tee "log.txt"
+python test_all_image.py 2>&1 | tee "log.txt"
 cat log.txt | grep latency: | tail -n 94 | awk '{a+=$2}END{print a/NR}'
 """
 
