@@ -448,7 +448,8 @@ at::Tensor d3x3(const int sm, const at::Tensor& feature, const at::Tensor& weigh
         // and d3x3_kernel.h asserts sm == 75). Fall back to a plain depthwise
         // conv2d, same as the conv1x1_*/conv_bias/transposed_conv layers do.
         const int C = feature.size(1);
-        return at::conv2d(feature, weight.permute({ 1, 0, 2, 3 }), at::nullopt, 1, 1, 1, C);
+        return write_out_buf(out_buf, at::conv2d(feature, weight.permute({ 1, 0, 2, 3 }), at::nullopt,
+                                                 1, 1, 1, C));
     }
     return d3x3_launch_helper(sm, feature, weight, out_buf, HINT_MAP_D3x3, HINT_MAP_D3x3_NAME);
 }

@@ -84,7 +84,7 @@ at::Tensor conv1x1_bias_shortcut2(const int sm, const at::Tensor& feature, const
 {
     if (sm < 75) {
         auto out = at::conv2d(feature, weight);
-        return out + bias.reshape({ 1, -1, 1, 1 }) + shortcut1 + shortcut2;
+        return write_out_buf(out_buf, out + bias.reshape({ 1, -1, 1, 1 }) + shortcut1 + shortcut2);
     }
     auto launch_cutlass = [&](auto sm_v) {
         using sm_t = decltype(sm_v);

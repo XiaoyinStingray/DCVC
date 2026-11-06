@@ -38,6 +38,24 @@ CUTLASS_HOST_DEVICE cutlass::half_t four<cutlass::half_t>()
     return reinterpret_cast<cutlass::half_t const&>(bits);
 }
 
+// Several inference buffers are not standalone tensors but views into one big
+// pre-allocated tensor (see the split_tensors_* calls in dmc_*_proxy.cpp, e.g.
+// `m_cat_feature_adaptor_m` holds both `m_memory` and `m_feature_p`).  Kernels
+// therefore have to write their result into `out_buf` in place and return it;
+// returning a freshly allocated tensor detaches the member tensor from the
+// shared buffer and later reads of that buffer see stale data.
+//
+// The `sm < 75` PyTorch fallbacks have to honour the same contract.
+__forceinline__ at::Tensor write_out_buf(at::Tensor& out_buf, const at::Tensor& value)
+{
+    if (out_buf.defined() && out_buf.sizes().equals(value.sizes())
+        && out_buf.scalar_type() == value.scalar_type()) {
+        out_buf.copy_(value);
+        return out_buf;
+    }
+    return value;
+}
+
 __forceinline__ cudaLaunchAttribute get_cuda_launch_attribute()
 {
     cudaLaunchAttribute attr;

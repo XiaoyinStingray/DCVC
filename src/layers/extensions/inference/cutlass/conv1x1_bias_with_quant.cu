@@ -32,7 +32,7 @@ at::Tensor conv1x1_bias_with_quant(const int sm, const at::Tensor& feature, cons
 {
     if (sm < 75) {
         auto out = at::conv2d(feature, weight);
-        return (out + bias.reshape({ 1, -1, 1, 1 })) * quant;
+        return write_out_buf(out_buf, (out + bias.reshape({ 1, -1, 1, 1 })) * quant);
     }
     auto launch_cutlass = [&](auto sm_v) {
         using sm_t = decltype(sm_v);

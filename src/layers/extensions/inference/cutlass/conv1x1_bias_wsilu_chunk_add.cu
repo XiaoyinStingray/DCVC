@@ -373,7 +373,7 @@ at::Tensor conv1x1_bias_wsilu_chunk_add(const int sm, const at::Tensor& feature,
                               at::indexing::Slice(), at::indexing::Slice() });
         auto x4 = out.index({ at::indexing::Slice(), at::indexing::Slice(3, at::nullopt, 4),
                               at::indexing::Slice(), at::indexing::Slice() });
-        return x1 + x2 + x3 + x4;
+        return write_out_buf(out_buf, x1 + x2 + x3 + x4);
     }
     auto launch_cutlass = [&](auto sm_v) {
         using sm_t = decltype(sm_v);

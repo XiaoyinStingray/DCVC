@@ -103,7 +103,7 @@ at::Tensor transposed_conv(const int sm, const at::Tensor& feature, const at::Te
 {
     const int kernel = weight.size(2);
     if (sm < 75) {
-        return at::conv_transpose2d(feature, weight, at::nullopt, stride);
+        return write_out_buf(out_buf, at::conv_transpose2d(feature, weight, at::nullopt, stride));
     }
     auto launch_cutlass = [&](auto sm_v) {
         using sm_t = decltype(sm_v);

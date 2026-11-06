@@ -134,7 +134,7 @@ at::Tensor conv_bias(const int sm, const at::Tensor& feature, const at::Tensor& 
     const int kernel = weight.size(2);
     if (sm < 75) {
         auto out = at::conv2d(feature, weight, at::nullopt, stride, (kernel - 1) / 2);
-        return out + bias.reshape({ 1, -1, 1, 1 });
+        return write_out_buf(out_buf, out + bias.reshape({ 1, -1, 1, 1 }));
     }
     auto launch_cutlass = [&](auto sm_v) {
         using sm_t = decltype(sm_v);

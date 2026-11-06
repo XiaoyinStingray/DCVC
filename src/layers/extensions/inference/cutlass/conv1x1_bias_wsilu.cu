@@ -233,7 +233,7 @@ at::Tensor conv1x1_bias_wsilu(const int sm, const at::Tensor& feature, const at:
     if (sm < 75) {
         auto out = at::conv2d(feature, weight);
         out = out + bias.reshape({ 1, -1, 1, 1 });
-        return out * at::sigmoid(out * 4.f);
+        return write_out_buf(out_buf, out * at::sigmoid(out * 4.f));
     }
     auto launch_cutlass = [&](auto sm_v) {
         using sm_t = decltype(sm_v);
