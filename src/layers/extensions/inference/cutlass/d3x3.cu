@@ -442,5 +442,13 @@ std::unordered_map<uint64_t, int> HINT_MAP_D3x3 = {
 
 at::Tensor d3x3(const int sm, const at::Tensor& feature, const at::Tensor& weight, at::Tensor& out_buf)
 {
+    if (sm < 75) {
+        // Note: d3x3 weight is reordered from [C, 1, 3, 3] to [1, C, 3, 3].
+        // sm < 75 has no CUTLASS depthwise kernel (the Sm75 one is the only one,
+        // and d3x3_kernel.h asserts sm == 75). Fall back to a plain depthwise
+        // conv2d, same as the conv1x1_*/conv_bias/transposed_conv layers do.
+        const int C = feature.size(1);
+        return at::conv2d(feature, weight.permute({ 1, 0, 2, 3 }), at::nullopt, 1, 1, 1, C);
+    }
     return d3x3_launch_helper(sm, feature, weight, out_buf, HINT_MAP_D3x3, HINT_MAP_D3x3_NAME);
 }
