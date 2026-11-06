@@ -53,6 +53,14 @@ __forceinline__ at::Tensor write_out_buf(at::Tensor& out_buf, const at::Tensor& 
         out_buf.copy_(value);
         return out_buf;
     }
+    static bool warned = false;
+    if (!warned) {
+        warned = true;
+        std::cerr << "[write_out_buf] cannot write back (out_buf " << out_buf.sizes()
+                  << " vs value " << value.sizes()
+                  << "); returning a new tensor -- shared-buffer aliasing will break"
+                  << std::endl;
+    }
     return value;
 }
 
