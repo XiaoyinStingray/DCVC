@@ -3,3 +3,5 @@ __pycache__/
 outputs/
 *.pth.tar
 checkpoints/*.pth*
+
+test_cfg/jz_*.json
