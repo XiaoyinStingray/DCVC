@@ -35,8 +35,15 @@ elif cpu_count < 32:
 else:
     nvcc_split_compile = 4
 nvcc_flags = [f'-DCURRENT_DEVICE_SM={sm}', '-O3', '--use_fast_math',
-              '--extra-device-vectorization', arch_str, '-Wno-deprecated-declarations',
-              f'--split-compile={nvcc_split_compile}']
+              '--extra-device-vectorization', arch_str, '-Wno-deprecated-declarations']
+# `--split-compile` 是 nvcc 12.0+ 才支持的选项（只用于单文件内并行编译，
+# 不影响产物）。CUDA 11.x 下传入会直接 `nvcc fatal: Unknown option`。
+# 这里按 torch 编译时的 CUDA 版本判断，低版本跳过。
+_cuda_major = int((torch.version.cuda or '0').split('.')[0])
+if _cuda_major >= 12:
+    nvcc_flags.append(f'--split-compile={nvcc_split_compile}')
+else:
+    print(f'[setup] CUDA {torch.version.cuda}: skip --split-compile (needs >=12.0)')
 if sm == 90:
     nvcc_flags.append('-DCUTLASS_ENABLE_GDC_FOR_SM90=1')
 elif sm == 100:
